@@ -59,7 +59,6 @@
 (setf *group-format* " %t ")
 ;; (setf *window-format* "%m%50t ")
 (setf *window-format* "%m%n%s%20t ")
-(setf *mode-line-timeout* 1)
 
 (setf *time-modeline-string* "^9 • %e, %a^n^B %l:%M ^b")
 
@@ -74,7 +73,7 @@
             "  "
             ;; "^3%M^n"
             ;; '(:eval (get-jabber-message-count))
-            "%I "
+            ;; "%I "
             "^B^2^n^b%B "
             '(:eval (get-date-modeline))
             ))
@@ -82,10 +81,6 @@
 (setf *mode-line-border-width* 0)
 (setf *mode-line-background-color* "#000809")
 (setf *mode-line-foreground-color* "DeepSkyBlue")
-
-(if (not (head-mode-line (current-head)))
-    (toggle-mode-line (current-screen)
-                      (current-head)))
 
 (stumpwm:grename "One")
 (stumpwm:gnewbg "Two")
@@ -129,6 +124,8 @@
 (define-key *root-map* (kbd "K") "move-window up")
 (define-key *root-map* (kbd "L") "move-window right")
 
+(define-key *root-map* (kbd "C-h") '*help-map*)
+
 (define-key *root-map* (kbd "q") "delete")
 (define-key *root-map* (kbd "r") "remove")
 (define-key *root-map* (kbd "R") "iresize")
@@ -147,8 +144,6 @@
 (define-key *root-map* (kbd "C-R") "exec ./.dmenu/dmenu-reddio.sh")
 (define-key *root-map* (kbd "C-S") "exec ./.dmenu/dmenu-surfraw.sh")
 (define-key *root-map* (kbd "C-T") "exec ./.dmenu/dmenu-trading.sh")
-;; Browse somewhere
-(define-key *root-map* (kbd "b") "colon1 exec brave http://www.")
 ;; Ssh somewhere
 (define-key *root-map* (kbd "C-s") "colon1 exec xterm -e ssh ")
 ;; Lock screen
@@ -163,12 +158,24 @@
 (define-key *aadi/emacs-map* (kbd "c") "exec emacsclient -c -a '' ~/.config/")
 (define-key *aadi/emacs-map* (kbd "w") "exec emacsclient -c -a '' ~/Documents/emacs-wiki/main.org")
 (define-key *aadi/emacs-map* (kbd "s") "exec emacsclient -c -a '' ~/Documents/some-code")
+(define-key *aadi/emacs-map* (kbd "m") "exec emacsclient -c -a '' ~/.config/stumpwm/config")
 
+(defvar *aadi/browser-map* (make-sparse-keymap)
+  "Keymap for finding files (and doing other things) in emacs.")
+(define-key *root-map* (kbd "w") '*aadi/browser-map*)
+(define-key *aadi/browser-map* (kbd "w") "exec brave")
+(define-key *aadi/browser-map* (kbd "y") "exec yt")
+(define-key *aadi/browser-map* (kbd "i") "exec brave --incognito")
 
-;; Message window font;
-                                        ; (ql:quickload 'clx-truetype)
-                                        ; (load-module "ttf-fonts")
-                                        ; (xft:cache-fonts)
+(defvar *aadi/scripts-map* (make-sparse-keymap)
+  "Keymap for finding files (and doing other things) in emacs.")
+(define-key *root-map* (kbd "a") '*aadi/scripts-map*)
+(define-key *aadi/scripts-map* (kbd "h") "exec st -e htop")
+(define-key *aadi/scripts-map* (kbd "r") "exec st -e ranger")
+
+(define-key *top-map* (kbd "XF86AudioMute") "exec pamixer -t")
+(define-key *top-map* (kbd "XF86AudioRaiseVolume") "exec pamixer --allow-boost -i 5")
+(define-key *top-map* (kbd "XF86AudioLowerVolume") "exec pamixer --allow-boost -d 5")
                                         ; (set-font (make-instance 'xft:font :family "Iosevka Nerd Font" :subfamily "Bold" :size 7 :antialias t))
                                         ; (set-font "-*-fixed-medium-r-normal-*-*-140-*-*-*-*-*-*")
 (set-font "-xos4-terminus-medium-r-normal--13-140-72-72-c-80-iso8859-14")
