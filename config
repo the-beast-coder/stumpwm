@@ -1,0 +1,168 @@
+;; -*-lisp-*-
+;;  ____ _____ 
+;; |  _ \_   _|  Derek Taylor (DistroTube)
+;; | | | || |  	 http://www.youtube.com/c/DistroTube
+;; | |_| || |  	 http://www.gitlab.com/dwt1/ 
+;; |____/ |_|  	
+;;        
+;; A customized config for stumpwm (https://stumpwm.github.io/)     
+;; Modified by Derek Taylor (http://www.gitlab.com/dwt1/)
+
+(in-package :stumpwm)
+
+;;; Startup Programs
+;;; Set Background
+(run-shell-command "sh ~/.xprofile")
+
+(defvar color1 "#ff92d0")
+(defvar color2 "#282a36")
+
+(load-module "swm-gaps")
+(if (not swm-gaps:*gaps-on*)
+  (swm-gaps:toggle-gaps))
+(setf swm-gaps:*inner-gaps-size* 8
+      swm-gaps:*outer-gaps-size* 8
+      swm-gaps:*head-gaps-size* 8)
+
+(setf *message-window-gravity* :center
+      *input-window-gravity* :center
+      *window-border-style* :thin
+      *message-window-padding* 10
+      *maxsize-border-width* 2
+      *normal-border-width* 2
+      *transient-border-width* 2
+      stumpwm::*float-window-border* 2
+      stumpwm::*float-window-title-height* 5
+      *mouse-focus-policy* :click)
+
+(setf
+ stumpwm:*mode-line-background-color* color2
+ stumpwm:*mode-line-foreground-color* color1
+ stumpwm:*mode-line-border-color* "#333333"
+ stumpwm:*screen-mode-line-format* (list " ")
+ ;; stumpwm:*screen-mode-line-format* (list "%g | %v ^>^7 | " '(:eval (show-hostname)) "| " '(:eval (show-kernel)) "| " '(:eval (show-package-count)) "packages | %d ")
+ stumpwm:*mode-line-border-width* 1
+ stumpwm:*mode-line-pad-x* 6
+ stumpwm:*mode-line-pad-y* 2
+ stumpwm:*mode-line-timeout* 5
+ stumpwm:*group-format* "%n·%t"
+ stumpwm:*time-modeline-string* "%a, %b %d, %Y %l:%M%p"
+ stumpwm:*window-format* "^b^(:fg \"#9aedfe\")<%25t>"
+ )
+(stumpwm:set-focus-color "#7798CC")
+(stumpwm:grename "One")
+(stumpwm:gnewbg "Two")
+(stumpwm:gnewbg "Three")
+(stumpwm:gnewbg "Four")
+(stumpwm:gnewbg "Five")
+(stumpwm:gnewbg "Six")
+(stumpwm:gnewbg "Seven")
+(stumpwm:gnewbg "Eight")
+(stumpwm:gnewbg "Nine")
+(stumpwm:toggle-mode-line (stumpwm:current-screen) (stumpwm:current-head))
+
+;; I change the prefix key to something else besides a keychord.
+;; The following three lines are a dirty hack to make SUPER the prefix key.
+;; This was originally (set-prefix-key (kbd "C-t"))
+(run-shell-command "xmodmap -e 'clear mod4'" t)
+(run-shell-command "xmodmap -e \'keycode 133 = F20\'" t)
+(set-prefix-key (kbd "F20"))
+
+;; prompt the user for an interactive command. The first arg is an
+;; optional initial contents.
+(defcommand colon1 (&optional (initial "")) (:rest)
+  (let ((cmd (read-one-line (current-screen) ": " :initial-input initial)))
+    (when cmd
+      (eval-command cmd t))))
+
+(define-key *root-map* (kbd "Q") "quit")
+(define-key *root-map* (kbd "C-r") "restart-hard")
+(define-key *root-map* (kbd "c") "command-mode")
+
+;; (define-key *root-map* (kbd "h") "move-focus left")
+;; (define-key *root-map* (kbd "j") "move-focus down")
+;; (define-key *root-map* (kbd "k") "move-focus up")
+;; (define-key *root-map* (kbd "l") "move-focus left")
+
+(define-key *root-map* (kbd "h") "move-focus left")
+(define-key *root-map* (kbd "j") "move-focus down")
+(define-key *root-map* (kbd "k") "move-focus up")
+(define-key *root-map* (kbd "l") "move-focus right")
+(define-key *root-map* (kbd "H") "move-window left")
+(define-key *root-map* (kbd "J") "move-window down")
+(define-key *root-map* (kbd "K") "move-window up")
+(define-key *root-map* (kbd "L") "move-window right")
+
+(define-key *root-map* (kbd "q") "delete")
+(define-key *root-map* (kbd "r") "remove")
+(define-key *root-map* (kbd "R") "iresize")
+
+(define-key *root-map* (kbd "C-m") "mode-line")
+
+(define-key *root-map* (kbd "RET") "exec st") 
+;; Launch Emacs
+(define-key *root-map* (kbd "e") "exec emacsclient -c -a ''")
+;; Launch Dmenu
+(define-key *root-map* (kbd "d") "exec dmenu_run")
+;; My Dmenu Scripts
+(define-key *root-map* (kbd "C-E") "exec ./.dmenu/dmenu-edit-configs.sh")
+(define-key *root-map* (kbd "C-N") "exec ./.dmenu/dmenu-sysmon.sh")
+(define-key *root-map* (kbd "C-P") "exec passmenu")
+(define-key *root-map* (kbd "C-R") "exec ./.dmenu/dmenu-reddio.sh")
+(define-key *root-map* (kbd "C-S") "exec ./.dmenu/dmenu-surfraw.sh")
+(define-key *root-map* (kbd "C-T") "exec ./.dmenu/dmenu-trading.sh")
+;; Browse somewhere
+(define-key *root-map* (kbd "b") "colon1 exec brave http://www.")
+;; Ssh somewhere
+(define-key *root-map* (kbd "C-s") "colon1 exec xterm -e ssh ")
+;; Lock screen
+(define-key *root-map* (kbd "C-l") "exec slock")
+
+
+(defvar *aadi/emacs-map* (make-sparse-keymap)
+  "Keymap for finding files (and doing other things) in emacs.")
+(define-key *root-map* (kbd "e") '*aadi/emacs-map*)
+(define-key *aadi/emacs-map* (kbd "e") "exec emacsclient -c -a ''")
+(define-key *aadi/emacs-map* (kbd "f") "exec emacsclient -c -a '' ~")
+(define-key *aadi/emacs-map* (kbd "c") "exec emacsclient -c -a '' ~/.config/")
+(define-key *aadi/emacs-map* (kbd "w") "exec emacsclient -c -a '' ~/Documents/emacs-wiki/main.org")
+(define-key *aadi/emacs-map* (kbd "s") "exec emacsclient -c -a '' ~/Documents/some-code")
+
+
+;; Message window font;
+                                        ; (ql:quickload 'clx-truetype)
+                                        ; (load-module "ttf-fonts")
+                                        ; (xft:cache-fonts)
+                                        ; (set-font (make-instance 'xft:font :family "Iosevka Nerd Font" :subfamily "Bold" :size 7 :antialias t))
+                                        ; (set-font "-*-fixed-medium-r-normal-*-*-140-*-*-*-*-*-*")
+(set-font "-xos4-terminus-medium-r-normal--13-140-72-72-c-80-iso8859-14")
+
+;;; Define window placement policy...
+;; Clear rules
+(clear-window-placement-rules)
+
+;; Last rule to match takes precedence!
+;; TIP: if the argument to :title or :role begins with an ellipsis, a substring
+;;
+;; TIP: if the :create flag is set then a missing group will be created and
+;; restored from *data-dir*/create file.
+;; TIP: if the :restore flag is set then group dump is restored even for an
+;; existing group using *data-dir*/restore file.
+(define-frame-preference "Default"
+  ;; frame raise lock (lock AND raise == jumpto)
+  (0 t nil :class "Konqueror" :role "...konqueror-mainwindow")
+  (1 t nil :class "XTerm"))
+
+(define-frame-preference "Ardour"
+  (0 t   t   :instance "ardour_editor" :type :normal)
+  (0 t   t   :title "Ardour - Session Control")
+  (0 nil nil :class "XTerm")
+  (1 t   nil :type :normal)
+  (1 t   t   :instance "ardour_mixer")
+  (2 t   t   :instance "jvmetro")
+  (1 t   t   :instance "qjackctl")
+  (3 t   t   :instance "qjackctl" :role "qjackctlMainForm"))
+
+(define-frame-preference "Shareland"
+  (0 t   nil :class "XTerm")
+  (1 nil t   :class "aMule"))
