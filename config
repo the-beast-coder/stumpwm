@@ -28,59 +28,26 @@
       *mouse-focus-policy* :click)
 
 
-(in-package :stumpwm)
+(defvar *modelineinfo* "battery | date")
+(sb-thread:make-thread
+ (lambda ()
+   (loop do
+     (progn
+       (setf *modelineinfo* (run-shell-command "sh ~/.config/stumpwm/modeline.sh" t))
+       (sleep 10)))))
 
-(load-module "battery-portable")
-(load-module "wifi")
-(load-module "maildir")
-;; "[^B%n^b] %W"
-;; "%n%s%t"
-;; "%m%n%s%50t"
-;; "%a %b %e %k:%M:%S"
-
-(setf *bar-med-color* "^B^8")
-(setf *bar-hi-color* "^B^3")
-(setf *bar-crit-color* "^B^1")
-
-(setf *colors*
-      '("black"
-        "red"
-        "green"
-        "yellow"
-        "blue"
-        "magenta"
-        "cyan"
-        "white"
-        "GreenYellow"
-        "#009696"))
-
-(update-color-map (current-screen))
-
-(setf *group-format* " %t ")
-;; (setf *window-format* "%m%50t ")
-(setf *window-format* "%m%n%s%20t ")
-
-(setf *time-modeline-string* "^9 • %e, %a^n^B %l:%M ^b")
-
-(defun get-date-modeline ()
-  (stumpwm:run-shell-command
-   (format nil "date +\"~A\""
-           *time-modeline-string*) t))
-
-(setf *screen-mode-line-format*
+(setf stumpwm:*screen-mode-line-format*
       (list "^B^3 %g ^n^b %W ^> "
-            ;; '(:eval (get-layout-modeline))
-            "  "
-            ;; "^3%M^n"
-            ;; '(:eval (get-jabber-message-count))
-            ;; "%I "
-            "^B^2^n^b%B "
-            '(:eval (get-date-modeline))
-            ))
+            " "
+            '(:eval *modelineinfo*)))
 
 (setf *mode-line-border-width* 0)
 (setf *mode-line-background-color* "#000809")
 (setf *mode-line-foreground-color* "DeepSkyBlue")
+
+;; turn on/off the mode line for the current head only.
+(stumpwm:toggle-mode-line (stumpwm:current-screen)
+                          (stumpwm:current-head))
 
 (stumpwm:grename "One")
 (stumpwm:gnewbg "Two")
