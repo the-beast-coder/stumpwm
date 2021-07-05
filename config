@@ -6,9 +6,6 @@
 ;;; Set Background
 (run-shell-command "sh ~/.xprofile")
 
-(defvar color1 "#ff92d0")
-(defvar color2 "#282a36")
-
 (load "~/quicklisp/setup.lisp")
 (load-module "ttf-fonts")
 (ql:quickload :clx-truetype)
@@ -94,7 +91,6 @@
         do
            (if (sb-thread:thread-alive-p th) (sb-thread:terminate-thread th))))
 
-
 (setf *bar-med-color* "^B^8")
 (setf *bar-hi-color* "^B^3")
 (setf *bar-crit-color* "^B^1")
@@ -155,6 +151,22 @@
   (let ((cmd (read-one-line (current-screen) ": " :initial-input initial)))
     (when cmd
       (eval-command cmd t))))
+
+;; workspace keybinds
+
+(defvar *move-to-keybinds* (list "!"
+                                 "@"
+                                 "#"
+                                 "$"
+                                 "%"
+                                 "^"
+                                 "&"
+                                 "*"
+                                 "("))
+(dotimes (y 9)
+  (let ((workspace (write-to-string (+ y 1))))
+    (define-key *root-map* (kbd workspace) (concat "gselect " workspace))
+    (define-key *root-map* (kbd (nth y *move-to-keybinds*)) (concat "gmove-and-follow " workspace))))
 
 (defcommand better-quit () ()
   (kill-all-threads)
