@@ -13,7 +13,7 @@
 (set-font (make-instance 'xft:font
                          :family "JetBrains Mono"
                          :subfamily "Regular"
-                         :size 9
+                         :size 10
                          :antialias t))
 
 (setf *message-window-gravity* :center
@@ -95,7 +95,7 @@
 (setf *mode-line-foreground-color* "DeepSkyBlue")
 
 ;; turn on/off the mode line for the current head only.
-(stumpwm:toggle-mode-line (stumpwm:current-screen)
+(stumpwm:toggle-mode-line (stumpwm:current-sc reen)
                           (stumpwm:current-head))
 
 
@@ -125,32 +125,57 @@
 
 ;; workspace keybinds
 
-(defvar *move-to-keybinds* (list "!"
-                                 "@"
-                                 "#"
-                                 "$"
-                                 "%"
-                                 "^"
-                                 "&"
-                                 "*"
-                                 "("))
+(defvar *move-to-keybinds* (list "!" "@"  "#" "$" "%" "^" "&" "*" "("))
 (dotimes (y 9)
   (let ((workspace (write-to-string (+ y 1))))
     (define-key *root-map* (kbd workspace) (concat "gselect " workspace))
     (define-key *root-map* (kbd (nth y *move-to-keybinds*)) (concat "gmove-and-follow " workspace))))
 
-(defcommand better-quit () ()
-  (kill-all-threads)
-  (eval-command "quit"))
-
 (defcommand better-restart () ()
   (kill-all-threads)
   (eval-command "restart-hard"))
 
+(defcommand better-quit () ()
+  (let ((output (string-downcase (completing-read
+                                  (current-screen)
+                                  "Command: "
+                                  (list "restart" "shutdown" "log out" "suspend" "sleep" "hibernate")))))
+    (if (string/= output "")
+        (cond ((string= output "restart")
+               (kill-all-threads)
+               (run-shell-command "reboot"))
+              ((string= output "shutdown")
+               (kill-all-threads)           
+               (run-shell-command "shutdown -h now"))
+              ((string= output "log out")
+               (kill-all-thread)
+               (eval-command "quit"))
+              ((or (string= output "suspend") (string= output "sleep"))
+               (run-shell-command "systemctl suspend"))
+              ((string= output "hibernate")
+               (run-shell-command "systemctl hibernate"))
+              (t (echo "Please enter restart, shutdown, log out, suspend or hibernate."))))))
+
 (define-key *root-map* (kbd "Q") "better-quit")
 (define-key *root-map* (kbd "C-r") "better-restart")
 
-(define-key *root-map* (kbd "C-g") "toggle-gaps")
+(defcommand increase-gaps () ()
+  (setf swm-gaps:*outer-gaps-size* (+ swm-gaps:*outer-gaps-size* 5)
+        swm-gaps:*inner-gaps-size* (+ swm-gaps:*inner-gaps-size* 5))
+  (swm-gaps:toggle-gaps)
+  (swm-gaps:toggle-gaps))
+
+(defcommand decrease-gaps () ()
+  (if (> swm-gaps:*inner-gaps-size* 5)
+      (progn
+        (setf swm-gaps:*outer-gaps-size* (- swm-gaps:*outer-gaps-size* 5)
+              swm-gaps:*inner-gaps-size* (- swm-gaps:*inner-gaps-size* 5))
+        (swm-gaps:toggle-gaps)
+        (swm-gaps:toggle-gaps))))
+
+(define-key *root-map* (kbd "g") "toggle-gaps")
+(define-key *root-map* (kbd "X") "increase-gaps")
+(define-key *root-map* (kbd "Z") "decrease-gaps")
 
 ;; (define-key *root-map* (kbd "h") "move-focus left")
 ;; (define-key *root-map* (kbd "j") "move-focus down")
@@ -184,8 +209,11 @@
 ;; Launch Emacs
 (define-key *root-map* (kbd "e") "exec emacsclient -c -a ''")
 ;; Launch Dmenu
-(define-key *root-map* (kbd "d") "exec dmenu_run")
-(define-key *top-map* (kbd "M-space") "exec dmenu_run -c -i -g 4 -l 7")
+;; (define-key *root-map* (kbd "d") "exec dmenu_run")
+;; (define-key *top-map* (kbd "M-space") "exec dmenu_run -c -i -g 4 -l 7")
+
+(define-key *root-map* (kbd "space") "exec")
+(define-key *root-map* (kbd "M-space") "exec")
 
 (defvar *aadi/layouts-map* (make-sparse-keymap)
   "Layouts to set for windows")
