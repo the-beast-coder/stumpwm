@@ -145,7 +145,18 @@
 (define-key *top-map* (kbd "XF86AudioLowerVolume") "exec pamixer --allow-boost -d 5")
                                         ; (set-font (make-instance 'xft:font :family "Iosevka Nerd Font" :subfamily "Bold" :size 7 :antialias t))
                                         ; (set-font "-*-fixed-medium-r-normal-*-*-140-*-*-*-*-*-*")
-(set-font "-xos4-terminus-medium-r-normal--13-140-72-72-c-80-iso8859-14")
+                                        ;(set-font "-xos4-terminus-medium-r-normal--20-200-90-90-c-90-iso8859-18")
+
+(load "~/quicklisp/setup.lisp")
+(load-module "ttf-fonts")
+(ql:quickload :clx-truetype)
+(clx-truetype:cache-fonts)
+
+(set-font (make-instance 'xft:font
+                         :family "JetBrains Mono"
+                         :subfamily "Regular"
+                         :size 9
+                         :antialias t))
 
 ;;; Define window placement policy...
 ;; Clear rules
