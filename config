@@ -9,6 +9,17 @@
 (defvar color1 "#ff92d0")
 (defvar color2 "#282a36")
 
+(load "~/quicklisp/setup.lisp")
+(load-module "ttf-fonts")
+(ql:quickload :clx-truetype)
+(clx-truetype:cache-fonts)
+
+(set-font (make-instance 'xft:font
+                         :family "JetBrains Mono"
+                         :subfamily "Regular"
+                         :size 9
+                         :antialias t))
+
 (load-module "swm-gaps")
 (if (not swm-gaps:*gaps-on*)
   (swm-gaps:toggle-gaps))
@@ -29,12 +40,83 @@
 
 
 (defvar *modelineinfo* "battery | date")
-(sb-thread:make-thread
- (lambda ()
-   (loop do
-     (progn
-       (setf *modelineinfo* (run-shell-command "sh ~/.config/stumpwm/modeline.sh" t))
-       (sleep 10)))))
+
+;; -*-lisp-*-
+
+(in-package :stumpwm)
+
+;;; Startup Programs
+;;; Set Background
+(run-shell-command "sh ~/.xprofile")
+
+(defvar color1 "#ff92d0")
+(defvar color2 "#282a36")
+
+(load-module "swm-gaps")
+(if (not swm-gaps:*gaps-on*)
+    (swm-gaps:toggle-gaps))
+(setf swm-gaps:*inner-gaps-size* 8
+      swm-gaps:*outer-gaps-size* 8
+      swm-gaps:*head-gaps-size* 8)
+
+(setf *message-window-gravity* :center
+      *input-window-gravity* :center
+      *window-border-style* :thin
+      *message-window-padding* 10
+      *maxsize-border-width* 2
+      *normal-border-width* 2
+      *transient-border-width* 2
+      stumpwm::*float-window-border* 2
+      stumpwm::*float-window-title-height* 5
+      *mouse-focus-policy* :click)
+
+(defvar *modelineinfo* "battery | date")
+(defparameter *threads* '())  ; we stock all threads here
+
+;; Helper to create and stock thread
+(defun do-in-thread (fn)
+  (setf *threads*
+        (cons
+         (sb-thread:make-thread fn)
+         *threads*)))
+
+;; Create some threads that loop forever
+(do-in-thread
+    (lambda ()
+      (loop do
+        (progn
+          (sleep 20)
+          (setf *modelineinfo* (run-shell-command "sh ~/.config/stumpwm/modeline.sh" t))))))
+
+;; Call this function when quiting stumpwm
+(defun kill-all-threads ()
+  (loop for th in *threads*
+        do
+           (if (sb-thread:thread-alive-p th) (sb-thread:terminate-thread th))))
+
+
+(setf *bar-med-color* "^B^8")
+(setf *bar-hi-color* "^B^3")
+(setf *bar-crit-color* "^B^1")
+
+(setf *colors*
+      '("black"
+        "red"
+        "green"
+        "yellow"
+        "blue"
+        "magenta"
+        "cyan"
+        "white"
+        "GreenYellow"
+        "#009696"))
+
+(update-color-map (current-screen))
+
+(setf *group-format* " %t ")
+;; (setf *window-format* "%m%50t ")
+(setf *window-format* "%m%n%s%20t ")
+(setf *mode-line-timeout* 1)
 
 (setf stumpwm:*screen-mode-line-format*
       (list "^B^3 %g ^n^b %W ^> "
@@ -49,15 +131,16 @@
 (stumpwm:toggle-mode-line (stumpwm:current-screen)
                           (stumpwm:current-head))
 
-(stumpwm:grename "One")
-(stumpwm:gnewbg "Two")
-(stumpwm:gnewbg "Three")
-(stumpwm:gnewbg "Four")
-(stumpwm:gnewbg "Five")
-(stumpwm:gnewbg "Six")
-(stumpwm:gnewbg "Seven")
-(stumpwm:gnewbg "Eight")
-(stumpwm:gnewbg "Nine")
+
+(stumpwm:grename "1")
+(stumpwm:gnewbg "2")
+(stumpwm:gnewbg "3")
+(stumpwm:gnewbg "4")
+(stumpwm:gnewbg "5")
+(stumpwm:gnewbg "6")
+(stumpwm:gnewbg "7")
+(stumpwm:gnewbg "8")
+(stumpwm:gnewbg "9")
 
 ;; I change the prefix key to something else besides a keychord.
 ;; The following three lines are a dirty hack to make SUPER the prefix key.
@@ -73,8 +156,16 @@
     (when cmd
       (eval-command cmd t))))
 
-(define-key *root-map* (kbd "Q") "quit")
-(define-key *root-map* (kbd "C-r") "restart-hard")
+(defcommand better-quit () ()
+  (kill-all-threads)
+  (eval-command "quit"))
+
+(defcommand better-restart () ()
+  (kill-all-threads)
+  (eval-command "restart-hard"))
+
+(define-key *root-map* (kbd "Q") "better-quit")
+(define-key *root-map* (kbd "C-r") "better-restart")
 (define-key *root-map* (kbd "c") "command-mode")
 
 ;; (define-key *root-map* (kbd "h") "move-focus left")
@@ -104,15 +195,7 @@
 (define-key *root-map* (kbd "e") "exec emacsclient -c -a ''")
 ;; Launch Dmenu
 (define-key *root-map* (kbd "d") "exec dmenu_run")
-;; My Dmenu Scripts
-(define-key *root-map* (kbd "C-E") "exec ./.dmenu/dmenu-edit-configs.sh")
-(define-key *root-map* (kbd "C-N") "exec ./.dmenu/dmenu-sysmon.sh")
-(define-key *root-map* (kbd "C-P") "exec passmenu")
-(define-key *root-map* (kbd "C-R") "exec ./.dmenu/dmenu-reddio.sh")
-(define-key *root-map* (kbd "C-S") "exec ./.dmenu/dmenu-surfraw.sh")
-(define-key *root-map* (kbd "C-T") "exec ./.dmenu/dmenu-trading.sh")
-;; Ssh somewhere
-(define-key *root-map* (kbd "C-s") "colon1 exec xterm -e ssh ")
+(define-key *top-map* (kbd "M-space") "exec dmenu_run")
 ;; Lock screen
 (define-key *root-map* (kbd "C-l") "exec slock")
 
@@ -146,17 +229,6 @@
                                         ; (set-font (make-instance 'xft:font :family "Iosevka Nerd Font" :subfamily "Bold" :size 7 :antialias t))
                                         ; (set-font "-*-fixed-medium-r-normal-*-*-140-*-*-*-*-*-*")
                                         ;(set-font "-xos4-terminus-medium-r-normal--20-200-90-90-c-90-iso8859-18")
-
-(load "~/quicklisp/setup.lisp")
-(load-module "ttf-fonts")
-(ql:quickload :clx-truetype)
-(clx-truetype:cache-fonts)
-
-(set-font (make-instance 'xft:font
-                         :family "JetBrains Mono"
-                         :subfamily "Regular"
-                         :size 9
-                         :antialias t))
 
 ;;; Define window placement policy...
 ;; Clear rules
