@@ -1,5 +1,4 @@
 ;; -*-lisp-*-
-
 (in-package :stumpwm)
 
 ;;; Startup Programs
@@ -17,23 +16,14 @@
                          :size 9
                          :antialias t))
 
-(load-module "swm-gaps")
-(if (not swm-gaps:*gaps-on*)
-  (swm-gaps:toggle-gaps))
-(setf swm-gaps:*inner-gaps-size* 8
-      swm-gaps:*outer-gaps-size* 8
-      swm-gaps:*head-gaps-size* 8)
-
-(setf *message-window-gravity* :center
-      *input-window-gravity* :center
-      *window-border-style* :thin
-      *message-window-padding* 10
-      *maxsize-border-width* 2
-      *normal-border-width* 2
-      *transient-border-width* 2
-      stumpwm::*float-window-border* 2
-      stumpwm::*float-window-title-height* 5
-      *mouse-focus-policy* :click)
+(setf  *window-border-style* :thin
+       *message-window-padding* 10 
+       *maxsize-border-width* 2
+       *normal-border-width* 2
+       *transient-border-width* 2
+       stumpwm::*float-window-border* 4
+       stumpwm::*float-window-title-height* 5
+       *mouse-focus-policy* :click)
 
 
 (defvar *modelineinfo* "battery | date")
@@ -53,19 +43,8 @@
 (if (not swm-gaps:*gaps-on*)
     (swm-gaps:toggle-gaps))
 (setf swm-gaps:*inner-gaps-size* 8
-      swm-gaps:*outer-gaps-size* 8
+      swm-gaps:*outer-gaps-size* 15
       swm-gaps:*head-gaps-size* 8)
-
-(setf *message-window-gravity* :center
-      *input-window-gravity* :center
-      *window-border-style* :thin
-      *message-window-padding* 10
-      *maxsize-border-width* 2
-      *normal-border-width* 2
-      *transient-border-width* 2
-      stumpwm::*float-window-border* 2
-      stumpwm::*float-window-title-height* 5
-      *mouse-focus-policy* :click)
 
 (defvar *modelineinfo* "battery | date")
 (defparameter *threads* '())  ; we stock all threads here
@@ -82,8 +61,8 @@
     (lambda ()
       (loop do
         (progn
-          (sleep 20)
-          (setf *modelineinfo* (run-shell-command "sh ~/.config/stumpwm/modeline.sh" t))))))
+          (setf *modelineinfo* (run-shell-command "sh ~/.config/stumpwm/modeline.sh" t))
+          (sleep 20)))))
 
 ;; Call this function when quiting stumpwm
 (defun kill-all-threads ()
@@ -180,6 +159,12 @@
 (define-key *root-map* (kbd "C-r") "better-restart")
 (define-key *root-map* (kbd "c") "command-mode")
 
+
+(defcommand better-toggle-gaps () ()
+  (stumpwm:toggle-mode-line (stumpwm:current-screen))
+  (swm-gaps:toggle-gaps)
+  (stumpwm:toggle-mode-line (stumpwm:current-screen)))
+
 ;; (define-key *root-map* (kbd "h") "move-focus left")
 ;; (define-key *root-map* (kbd "j") "move-focus down")
 ;; (define-key *root-map* (kbd "k") "move-focus up")
@@ -200,6 +185,12 @@
 (define-key *root-map* (kbd "r") "remove")
 (define-key *root-map* (kbd "R") "iresize")
 
+(setf *resize-increment* 25)
+(define-key *top-map* (kbd "M-l") "resize-direction Right")
+(define-key *top-map* (kbd "M-h") "resize-direction Left")
+(define-key *top-map* (kbd "M-k") "resize-direction Up")
+(define-key *top-map* (kbd "M-j") "resize-direction Down")
+
 (define-key *root-map* (kbd "C-m") "mode-line")
 
 (define-key *root-map* (kbd "RET") "exec st") 
@@ -208,12 +199,19 @@
 ;; Launch Dmenu
 (define-key *root-map* (kbd "d") "exec dmenu_run")
 (define-key *top-map* (kbd "M-space") "exec dmenu_run")
-;; Lock screen
-(define-key *root-map* (kbd "C-l") "exec slock")
 
+(defvar *aadi/layouts-map* (make-sparse-keymap)
+  "Layouts to set for windows")
+(define-key *root-map* (kbd "[") '*aadi/layouts-map*)
+(define-key *aadi/layouts-map* (kbd "g") "restore-from-file ~/.config/stumpwm/layouts/grid")
+(define-key *aadi/layouts-map* (kbd "3") "restore-from-file ~/.config/stumpwm/layouts/3layout")
+(define-key *aadi/layouts-map* (kbd "4") "restore-from-file ~/.config/stumpwm/layouts/4layout")
+(define-key *aadi/layouts-map* (kbd "t") "float-this")
+(define-key *aadi/layouts-map* (kbd "T") "unfloat-this")
 
 (defvar *aadi/emacs-map* (make-sparse-keymap)
   "Keymap for finding files (and doing other things) in emacs.")
+
 (define-key *root-map* (kbd "e") '*aadi/emacs-map*)
 (define-key *aadi/emacs-map* (kbd "e") "exec emacsclient -c -a ''")
 (define-key *aadi/emacs-map* (kbd "f") "exec emacsclient -c -a '' ~")
@@ -238,9 +236,9 @@
 (define-key *top-map* (kbd "XF86AudioMute") "exec pamixer -t")
 (define-key *top-map* (kbd "XF86AudioRaiseVolume") "exec pamixer --allow-boost -i 5")
 (define-key *top-map* (kbd "XF86AudioLowerVolume") "exec pamixer --allow-boost -d 5")
-                                        ; (set-font (make-instance 'xft:font :family "Iosevka Nerd Font" :subfamily "Bold" :size 7 :antialias t))
-                                        ; (set-font "-*-fixed-medium-r-normal-*-*-140-*-*-*-*-*-*")
-                                        ;(set-font "-xos4-terminus-medium-r-normal--20-200-90-90-c-90-iso8859-18")
+
+(define-key *root-map* (kbd "C-Right") "exec brightnessctl set 7%+")
+(define-key *root-map* (kbd "C-Left") "exec brightnessctl set 7%-")
 
 ;;; Define window placement policy...
 ;; Clear rules
@@ -254,8 +252,8 @@
 ;; TIP: if the :restore flag is set then group dump is restored even for an
 ;; existing group using *data-dir*/restore file.
 (define-frame-preference "Default"
-  ;; frame raise lock (lock AND raise == jumpto)
-  (0 t nil :class "Konqueror" :role "...konqueror-mainwindow")
+    ;; frame raise lock (lock AND raise == jumpto)
+    (0 t nil :class "Konqueror" :role "...konqueror-mainwindow")
   (1 t nil :class "XTerm"))
 
 (define-frame-preference "Ardour"

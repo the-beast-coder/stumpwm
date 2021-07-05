@@ -1,0 +1,36 @@
+#S(GDUMP
+   :NUMBER 1
+   :NAME "1"
+   :TREE ((#S(FDUMP
+              :NUMBER 0
+              :X 0
+              :Y 0
+              :WIDTH 785
+              :HEIGHT 1080
+              :WINDOWS (25173318 169869318 25167799)
+              :CURRENT 25173318)
+           (#S(FDUMP
+               :NUMBER 1
+               :X 785
+               :Y 0
+               :WIDTH 1135
+               :HEIGHT 465
+               :WINDOWS (27263022)
+               :CURRENT 27263022)
+            (#S(FDUMP
+                :NUMBER 2
+                :X 785
+                :Y 465
+                :WIDTH 550
+                :HEIGHT 615
+                :WINDOWS (167772166)
+                :CURRENT 167772166)
+             #S(FDUMP
+                :NUMBER 3
+                :X 1335
+                :Y 465
+                :WIDTH 585
+                :HEIGHT 615
+                :WINDOWS (27263076)
+                :CURRENT 27263076)))))
+   :CURRENT 2)
