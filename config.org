@@ -1,0 +1,7 @@
+#+TITLE: My StumpWM Config
+#+AUTHOR: Aadi Jain
+#+PROPERTY: head-args :tangle config
+
+
+* Init
+

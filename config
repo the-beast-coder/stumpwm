@@ -16,28 +16,20 @@
                          :size 9
                          :antialias t))
 
-(setf  *window-border-style* :thin
-       *message-window-padding* 10 
-       *maxsize-border-width* 2
-       *normal-border-width* 2
-       *transient-border-width* 2
-       stumpwm::*float-window-border* 4
-       stumpwm::*float-window-title-height* 5
-       *mouse-focus-policy* :click)
-
+(setf *message-window-gravity* :center
+      *input-window-gravity* :center
+      *window-border-style* :thin
+      *message-window-padding* 10
+      *maxsize-border-width* 2
+      *normal-border-width* 2
+      *transient-border-width* 2
+      stumpwm::*float-window-border* 4
+      stumpwm::*float-window-title-height* 20
+      *mouse-focus-policy* :click)
 
 (defvar *modelineinfo* "battery | date")
 
 ;; -*-lisp-*-
-
-(in-package :stumpwm)
-
-;;; Startup Programs
-;;; Set Background
-(run-shell-command "sh ~/.xprofile")
-
-(defvar color1 "#ff92d0")
-(defvar color2 "#282a36")
 
 (load-module "swm-gaps")
 (if (not swm-gaps:*gaps-on*)
@@ -157,7 +149,6 @@
 
 (define-key *root-map* (kbd "Q") "better-quit")
 (define-key *root-map* (kbd "C-r") "better-restart")
-(define-key *root-map* (kbd "c") "command-mode")
 
 
 (defcommand better-toggle-gaps () ()
@@ -198,7 +189,7 @@
 (define-key *root-map* (kbd "e") "exec emacsclient -c -a ''")
 ;; Launch Dmenu
 (define-key *root-map* (kbd "d") "exec dmenu_run")
-(define-key *top-map* (kbd "M-space") "exec dmenu_run")
+(define-key *top-map* (kbd "M-space") "exec dmenu_run -c -i -g 4 -l 7")
 
 (defvar *aadi/layouts-map* (make-sparse-keymap)
   "Layouts to set for windows")
@@ -225,13 +216,15 @@
 (define-key *root-map* (kbd "w") '*aadi/browser-map*)
 (define-key *aadi/browser-map* (kbd "w") "exec brave")
 (define-key *aadi/browser-map* (kbd "y") "exec yt")
-(define-key *aadi/browser-map* (kbd "i") "exec brave --incognito")
+(define-key *aadi/browser-map* (kbd "i") "exec brave --incognito --new-window")
+(define-key *aadi/browser-map* (kbd "p") "exec brave --incognito --new-window")
 
 (defvar *aadi/scripts-map* (make-sparse-keymap)
   "Keymap for finding files (and doing other things) in emacs.")
 (define-key *root-map* (kbd "a") '*aadi/scripts-map*)
 (define-key *aadi/scripts-map* (kbd "h") "exec st -e htop")
-(define-key *aadi/scripts-map* (kbd "r") "exec st -e ranger")
+(define-key *aadi/scripts-map* (kbd "f") "exec st -e ranger")
+(define-key *aadi/scripts-map* (kbd "r") "exec ramusage")
 
 (define-key *top-map* (kbd "XF86AudioMute") "exec pamixer -t")
 (define-key *top-map* (kbd "XF86AudioRaiseVolume") "exec pamixer --allow-boost -i 5")
@@ -242,7 +235,7 @@
 
 ;;; Define window placement policy...
 ;; Clear rules
-(clear-window-placement-rules)
+;;(clear-window-placement-rules)
 
 ;; Last rule to match takes precedence!
 ;; TIP: if the argument to :title or :role begins with an ellipsis, a substring
