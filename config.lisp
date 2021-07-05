@@ -1,11 +1,12 @@
-;; -*-lisp-*-
 (in-package :stumpwm)
-
-;;; Startup Programs
-;;; Set Background
-(run-shell-command "sh ~/.xprofile")
-
 (load "~/quicklisp/setup.lisp")
+
+(run-shell-command "xmodmap -e 'clear mod4'" t)
+(run-shell-command "xmodmap -e \'keycode 133 = F20\'" t)
+(run-shell-command "sh ~/.xprofile")
+;; Change the prefix to the super key
+(set-prefix-key (kbd "F20"))
+
 (load-module "ttf-fonts")
 (ql:quickload :clx-truetype)
 (clx-truetype:cache-fonts)
@@ -27,16 +28,32 @@
       stumpwm::*float-window-title-height* 20
       *mouse-focus-policy* :click)
 
-(defvar *modelineinfo* "battery | date")
-
-;; -*-lisp-*-
-
 (load-module "swm-gaps")
 (if (not swm-gaps:*gaps-on*)
     (swm-gaps:toggle-gaps))
-(setf swm-gaps:*inner-gaps-size* 7
-      swm-gaps:*outer-gaps-size* 12
-      swm-gaps:*head-gaps-size* 0)
+(setf swm-gaps:*inner-gaps-size* 8
+      swm-gaps:*outer-gaps-size* 15
+      swm-gaps:*head-gaps-size* 8)
+
+(setf *bar-crit-color* "^B^1")
+
+(setf *colors*
+      '("black"
+        "red"
+        "green"
+        "yellow"
+        "blue"
+        "magenta"
+        "cyan"
+        "white"
+        "GreenYellow"
+        "#009696"))
+
+(update-color-map (current-screen))
+
+(run-shell-command "xmodmap -e 'clear mod4'" t)
+(run-shell-command "xmodmap -e \'keycode 133 = F20\'" t)
+(run-shell-command "st &" t)
 
 (defvar *modelineinfo* "battery | date")
 (defparameter *threads* '())  ; we stock all threads here
@@ -62,24 +79,6 @@
         do
            (if (sb-thread:thread-alive-p th) (sb-thread:terminate-thread th))))
 
-(setf *bar-med-color* "^B^8")
-(setf *bar-hi-color* "^B^3")
-(setf *bar-crit-color* "^B^1")
-
-(setf *colors*
-      '("black"
-        "red"
-        "green"
-        "yellow"
-        "blue"
-        "magenta"
-        "cyan"
-        "white"
-        "GreenYellow"
-        "#009696"))
-
-(update-color-map (current-screen))
-
 (setf *group-format* " %t ")
 ;; (setf *window-format* "%m%50t ")
 (setf *window-format* "%m%n%s%20t ")
@@ -98,7 +97,6 @@
 (stumpwm:toggle-mode-line (stumpwm:current-screen)
                           (stumpwm:current-head))
 
-
 (stumpwm:grename "1")
 (stumpwm:gnewbg "2")
 (stumpwm:gnewbg "3")
@@ -109,22 +107,7 @@
 (stumpwm:gnewbg "8")
 (stumpwm:gnewbg "9")
 
-;; I change the prefix key to something else besides a keychord.
-;; The following three lines are a dirty hack to make SUPER the prefix key.
-;; This was originally (set-prefix-key (kbd "C-t"))
-(run-shell-command "xmodmap -e 'clear mod4'" t)
-(run-shell-command "xmodmap -e \'keycode 133 = F20\'" t)
-(set-prefix-key (kbd "F20"))
-
-;; prompt the user for an interactive command. The first arg is an
-;; optional initial contents.
-(defcommand colon1 (&optional (initial "")) (:rest)
-  (let ((cmd (read-one-line (current-screen) ": " :initial-input initial)))
-    (when cmd
-      (eval-command cmd t))))
-
 ;; workspace keybinds
-
 (defvar *move-to-keybinds* (list "!"
                                  "@"
                                  "#"
@@ -150,13 +133,6 @@
 (define-key *root-map* (kbd "Q") "better-quit")
 (define-key *root-map* (kbd "C-r") "better-restart")
 
-(define-key *root-map* (kbd "C-g") "toggle-gaps")
-
-;; (define-key *root-map* (kbd "h") "move-focus left")
-;; (define-key *root-map* (kbd "j") "move-focus down")
-;; (define-key *root-map* (kbd "k") "move-focus up")
-;; (define-key *root-map* (kbd "l") "move-focus left")
-
 (define-key *root-map* (kbd "h") "move-focus left")
 (define-key *root-map* (kbd "j") "move-focus down")
 (define-key *root-map* (kbd "k") "move-focus up")
@@ -178,27 +154,11 @@
 (define-key *top-map* (kbd "M-k") "resize-direction Up")
 (define-key *top-map* (kbd "M-j") "resize-direction Down")
 
-(define-key *root-map* (kbd "C-m") "mode-line")
-
-(define-key *root-map* (kbd "RET") "exec st") 
-;; Launch Emacs
-(define-key *root-map* (kbd "e") "exec emacsclient -c -a ''")
-;; Launch Dmenu
 (define-key *root-map* (kbd "d") "exec dmenu_run")
 (define-key *top-map* (kbd "M-space") "exec dmenu_run -c -i -g 4 -l 7")
 
-(defvar *aadi/layouts-map* (make-sparse-keymap)
-  "Layouts to set for windows")
-(define-key *root-map* (kbd "[") '*aadi/layouts-map*)
-(define-key *aadi/layouts-map* (kbd "g") "restore-from-file ~/.config/stumpwm/layouts/grid")
-(define-key *aadi/layouts-map* (kbd "3") "restore-from-file ~/.config/stumpwm/layouts/3layout")
-(define-key *aadi/layouts-map* (kbd "4") "restore-from-file ~/.config/stumpwm/layouts/4layout")
-(define-key *aadi/layouts-map* (kbd "t") "float-this")
-(define-key *aadi/layouts-map* (kbd "T") "unfloat-this")
-
 (defvar *aadi/emacs-map* (make-sparse-keymap)
   "Keymap for finding files (and doing other things) in emacs.")
-
 (define-key *root-map* (kbd "e") '*aadi/emacs-map*)
 (define-key *aadi/emacs-map* (kbd "e") "exec emacsclient -c -a ''")
 (define-key *aadi/emacs-map* (kbd "f") "exec emacsclient -c -a '' ~")
@@ -215,6 +175,7 @@
 (define-key *aadi/browser-map* (kbd "i") "exec brave --incognito --new-window")
 (define-key *aadi/browser-map* (kbd "p") "exec brave --incognito --new-window")
 
+(define-key *root-map* (kbd "RET") "exec st")
 (defvar *aadi/scripts-map* (make-sparse-keymap)
   "Keymap for finding files (and doing other things) in emacs.")
 (define-key *root-map* (kbd "a") '*aadi/scripts-map*)
@@ -229,17 +190,15 @@
 (define-key *root-map* (kbd "C-Right") "exec brightnessctl set 7%+")
 (define-key *root-map* (kbd "C-Left") "exec brightnessctl set 7%-")
 
-;;; Define window placement policy...
-;; Clear rules
-;;(clear-window-placement-rules)
+(defvar *aadi/layouts-map* (make-sparse-keymap)
+  "Layouts to set for windows")
+(define-key *root-map* (kbd "[") '*aadi/layouts-map*)
+(define-key *aadi/layouts-map* (kbd "g") "restore-from-file ~/.config/stumpwm/layouts/grid")
+(define-key *aadi/layouts-map* (kbd "3") "restore-from-file ~/.config/stumpwm/layouts/3layout")
+(define-key *aadi/layouts-map* (kbd "4") "restore-from-file ~/.config/stumpwm/layouts/4layout")
+(define-key *aadi/layouts-map* (kbd "t") "float-this")
+(define-key *aadi/layouts-map* (kbd "T") "unfloat-this")
 
-;; Last rule to match takes precedence!
-;; TIP: if the argument to :title or :role begins with an ellipsis, a substring
-;;
-;; TIP: if the :create flag is set then a missing group will be created and
-;; restored from *data-dir*/create file.
-;; TIP: if the :restore flag is set then group dump is restored even for an
-;; existing group using *data-dir*/restore file.
 (define-frame-preference "Default"
     ;; frame raise lock (lock AND raise == jumpto)
     (0 t nil :class "Konqueror" :role "...konqueror-mainwindow")
