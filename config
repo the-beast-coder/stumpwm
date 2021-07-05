@@ -16,8 +16,8 @@
                          :size 10
                          :antialias t))
 
-(setf *message-window-gravity* :center
-      *input-window-gravity* :center
+(setf *message-window-gravity* :bottom-right
+      *input-window-gravity* :bottom-right
       *window-border-style* :thin
       *message-window-padding* 10
       *maxsize-border-width* 2
@@ -95,7 +95,7 @@
 (setf *mode-line-foreground-color* "DeepSkyBlue")
 
 ;; turn on/off the mode line for the current head only.
-(stumpwm:toggle-mode-line (stumpwm:current-sc reen)
+(stumpwm:toggle-mode-line (stumpwm:current-screen)
                           (stumpwm:current-head))
 
 
@@ -206,8 +206,7 @@
 (define-key *root-map* (kbd "C-m") "mode-line")
 
 (define-key *root-map* (kbd "RET") "exec st") 
-;; Launch Emacs
-(define-key *root-map* (kbd "e") "exec emacsclient -c -a ''")
+
 ;; Launch Dmenu
 ;; (define-key *root-map* (kbd "d") "exec dmenu_run")
 ;; (define-key *top-map* (kbd "M-space") "exec dmenu_run -c -i -g 4 -l 7")
@@ -223,6 +222,28 @@
 (define-key *aadi/layouts-map* (kbd "4") "restore-from-file ~/.config/stumpwm/layouts/4layout")
 (define-key *aadi/layouts-map* (kbd "t") "float-this")
 (define-key *aadi/layouts-map* (kbd "T") "unfloat-this")
+
+;; (setf *ignore-wm-inc-hints* t)
+;; (defun show-key-seq (key seq val)
+;;   (message (print-key-seq (reverse seq))))
+
+;; (stumpwm:add-hook stumpwm:*key-press-hook* 'show-key-seq)
+
+                                        ; display the key sequence in progress
+;; (defun key-press-hook (key key-seq cmd)
+;;   (declare (ignore key))
+;;   (unless (eq *top-map* *resize-map*)
+;;     (let ((*message-window-gravity* :bottom-right))
+;;       (message "Keys: ~a" (print-key-seq (reverse key-seq))))
+;;     (when (stringp cmd)
+;;       ;; give 'em time to read it
+;;       (sleep 0.3))))
+
+;; (defmacro replace-hook (hook fn)
+;;   `(remove-hook ,hook ,fn)
+;;   `(add-hook ,hook ,fn))
+
+;; (replace-hook *key-press-hook* 'key-press-hook)
 
 (defvar *aadi/emacs-map* (make-sparse-keymap)
   "Keymap for finding files (and doing other things) in emacs.")
