@@ -1,10 +1,3 @@
-#+TITLE: My StumpWM Config
-#+AUTHOR: Aadi Jain
-#+PROPERTY: head-args :tangle config
-
-* Init
-** Startup
-#+BEGIN_SRC lisp :tangle yes
 (in-package :stumpwm)
 
 ;;; Startup Programs
@@ -12,22 +5,18 @@
 (run-shell-command "sh ~/.xprofile")
 
 (load "~/quicklisp/setup.lisp")
-#+END_SRC
-** Variables
-#+BEGIN_SRC lisp :tangle yes
+
 (setf *message-window-gravity* :bottom-right
-      ,*input-window-gravity* :bottom-right
-      ,*window-border-style* :thin
-      ,*message-window-padding* 10
-      ,*maxsize-border-width* 2
-      ,*normal-border-width* 2
-      ,*transient-border-width* 2
+      *input-window-gravity* :bottom-right
+      *window-border-style* :thin
+      *message-window-padding* 10
+      *maxsize-border-width* 2
+      *normal-border-width* 2
+      *transient-border-width* 2
       stumpwm::*float-window-border* 4
       stumpwm::*float-window-title-height* 20
-      ,*mouse-focus-policy* :click)
-#+END_SRC
-** Fonts
-#+BEGIN_SRC lisp :tangle yes
+      *mouse-focus-policy* :click)
+
 (load-module "ttf-fonts")
 (ql:quickload :clx-truetype)
 (clx-truetype:cache-fonts)
@@ -37,20 +26,14 @@
                          :subfamily "Regular"
                          :size 10
                          :antialias t))
-#+END_SRC
 
-** Gaps
-#+BEGIN_SRC lisp :tangle yes
 (load-module "swm-gaps")
 (if (not swm-gaps:*gaps-on*)
     (swm-gaps:toggle-gaps))
 (setf swm-gaps:*inner-gaps-size* 7
       swm-gaps:*outer-gaps-size* 12
       swm-gaps:*head-gaps-size* 0)
-#+END_SRC
 
-* Modeline
-#+BEGIN_SRC lisp :tangle yes
 (defvar *modelineinfo* "battery | date")
 (defparameter *threads* '())  ; we stock all threads here
 
@@ -110,10 +93,7 @@
 ;; turn on/off the mode line for the current head only.
 (stumpwm:toggle-mode-line (stumpwm:current-screen)
                           (stumpwm:current-head))
-#+END_SRC
 
-* Groups
-#+BEGIN_SRC lisp :tangle yes
 (stumpwm:grename "1")
 (stumpwm:gnewbg "2")
 (stumpwm:gnewbg "3")
@@ -123,20 +103,14 @@
 (stumpwm:gnewbg "7")
 (stumpwm:gnewbg "8")
 (stumpwm:gnewbg "9")
-#+END_SRC
 
-* Prefix Key
-#+BEGIN_SRC lisp :tangle yes
 ;; I change the prefix key to something else besides a keychord.
 ;; The following three lines are a dirty hack to make SUPER the prefix key.
 ;; This was originally (set-prefix-key (kbd "C-t"))
 (run-shell-command "xmodmap -e 'clear mod4'" t)
 (run-shell-command "xmodmap -e \'keycode 133 = F20\'" t)
 (set-prefix-key (kbd "F20"))
-#+END_SRC
 
-* Main
-#+BEGIN_SRC lisp :tangle yes
 ;; prompt the user for an interactive command. The first arg is an
 ;; optional initial contents.
 (defcommand colon1 (&optional (initial "")) (:rest)
@@ -342,4 +316,3 @@
 (define-frame-preference "Shareland"
     (0 t   nil :class "XTerm")
   (1 nil t   :class "aMule"))
-#+END_SRC
