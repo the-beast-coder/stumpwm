@@ -111,20 +111,10 @@
 (run-shell-command "xmodmap -e \'keycode 133 = F20\'" t)
 (set-prefix-key (kbd "F20"))
 
-;; prompt the user for an interactive command. The first arg is an
-;; optional initial contents.
 (defcommand colon1 (&optional (initial "")) (:rest)
   (let ((cmd (read-one-line (current-screen) ": " :initial-input initial)))
     (when cmd
       (eval-command cmd t))))
-
-;; workspace keybinds
-
-(defvar *move-to-keybinds* (list "!" "@"  "#" "$" "%" "^" "&" "*" "("))
-(dotimes (y 9)
-  (let ((workspace (write-to-string (+ y 1))))
-    (define-key *root-map* (kbd workspace) (concat "gselect " workspace))
-    (define-key *root-map* (kbd (nth y *move-to-keybinds*)) (concat "gmove-and-follow " workspace))))
 
 (defcommand better-restart () ()
   (kill-all-threads)
@@ -151,9 +141,6 @@
                (run-shell-command "systemctl hibernate"))
               (t (echo "Please enter restart, shutdown, log out, suspend or hibernate."))))))
 
-(define-key *root-map* (kbd "Q") "better-quit")
-(define-key *root-map* (kbd "C-r") "better-restart")
-
 (defcommand increase-gaps () ()
   (setf swm-gaps:*outer-gaps-size* (+ swm-gaps:*outer-gaps-size* 5)
         swm-gaps:*inner-gaps-size* (+ swm-gaps:*inner-gaps-size* 5))
@@ -167,6 +154,46 @@
               swm-gaps:*inner-gaps-size* (- swm-gaps:*inner-gaps-size* 5))
         (swm-gaps:toggle-gaps)
         (swm-gaps:toggle-gaps))))
+
+                                        ; display the key sequence in progress
+;; (defun key-press-hook (key key-seq cmd)
+;;   (declare (ignore key))
+;;   (unless (eq *top-map* *resize-map*)
+;;     (let ((*message-window-gravity* :bottom-right))
+;;       (message "Keys: ~a" (print-key-seq (reverse key-seq))))
+;;     (when (stringp cmd)
+;;       ;; give 'em time to read it
+;;       (sleep 0.3))))
+
+;; (defmacro replace-hook (hook fn)
+;;   `(remove-hook ,hook ,fn)
+;;   `(add-hook ,hook ,fn))
+
+;; (replace-hook *key-press-hook* 'key-press-hook)
+
+(ql:quickload "cl-ppcre")
+(defcommand aadi/yt-search () ()
+  (run-shell-command
+   (concat "brave --incognito --new-window youtube.com/results?search_query="
+           (cl-ppcre:regex-replace-all " "
+                                       (completing-read (current-screen)
+                                                        "Youtube search: "
+                                                        (list "Asmongold" "Gothamchess" "Distrotube"))
+                                       "+"))))
+
+;; prompt the user for an interactive command. The first arg is an
+;; optional initial contents.
+
+;; workspace keybinds
+
+(defvar *move-to-keybinds* (list "!" "@"  "#" "$" "%" "^" "&" "*" "("))
+(dotimes (y 9)
+  (let ((workspace (write-to-string (+ y 1))))
+    (define-key *root-map* (kbd workspace) (concat "gselect " workspace))
+    (define-key *root-map* (kbd (nth y *move-to-keybinds*)) (concat "gmove-and-follow " workspace))))
+
+(define-key *root-map* (kbd "Q") "better-quit")
+(define-key *root-map* (kbd "C-r") "better-restart")
 
 (define-key *root-map* (kbd "g") "toggle-gaps")
 (define-key *root-map* (kbd "X") "increase-gaps")
@@ -222,28 +249,6 @@
 (define-key *aadi/layouts-map* (kbd "t") "float-this")
 (define-key *aadi/layouts-map* (kbd "T") "unfloat-this")
 
-;; (setf *ignore-wm-inc-hints* t)
-;; (defun show-key-seq (key seq val)
-;;   (message (print-key-seq (reverse seq))))
-
-;; (stumpwm:add-hook stumpwm:*key-press-hook* 'show-key-seq)
-
-                                        ; display the key sequence in progress
-;; (defun key-press-hook (key key-seq cmd)
-;;   (declare (ignore key))
-;;   (unless (eq *top-map* *resize-map*)
-;;     (let ((*message-window-gravity* :bottom-right))
-;;       (message "Keys: ~a" (print-key-seq (reverse key-seq))))
-;;     (when (stringp cmd)
-;;       ;; give 'em time to read it
-;;       (sleep 0.3))))
-
-;; (defmacro replace-hook (hook fn)
-;;   `(remove-hook ,hook ,fn)
-;;   `(add-hook ,hook ,fn))
-
-;; (replace-hook *key-press-hook* 'key-press-hook)
-
 (defvar *aadi/emacs-map* (make-sparse-keymap)
   "Keymap for finding files (and doing other things) in emacs.")
 
@@ -253,17 +258,7 @@
 (define-key *aadi/emacs-map* (kbd "c") "exec emacsclient -c -a '' ~/.config/")
 (define-key *aadi/emacs-map* (kbd "w") "exec emacsclient -c -a '' ~/Documents/emacs-wiki/main.org")
 (define-key *aadi/emacs-map* (kbd "s") "exec emacsclient -c -a '' ~/Documents/some-code")
-(define-key *aadi/emacs-map* (kbd "m") "exec emacsclient -c -a '' ~/.config/stumpwm/config")
-
-(ql:quickload "cl-ppcre")
-(defcommand aadi/yt-search () ()
-  (run-shell-command
-   (concat "brave --incognito --new-window youtube.com/results?search_query="
-           (cl-ppcre:regex-replace-all " "
-                                       (completing-read (current-screen)
-                                                        "Youtube search: "
-                                                        (list "Asmongold" "Gothamchess" "Distrotube"))
-                                       "+"))))
+(define-key *aadi/emacs-map* (kbd "m") "exec emacsclient -c -a '' ~/.config/stumpwm/config.org")
 
 (defvar *aadi/browser-map* (make-sparse-keymap)
   "Keymap for finding files (and doing other things) in emacs.")
