@@ -148,7 +148,7 @@
                (kill-all-threads)           
                (run-shell-command "shutdown -h now"))
               ((string= output "log out")
-               (kill-all-thread)
+               (kill-all-threads)
                (eval-command "quit"))
               ((or (string= output "suspend") (string= output "sleep"))
                (run-shell-command "systemctl suspend"))
@@ -191,11 +191,15 @@
 (define-key *root-map* (kbd "K") "move-window up")
 (define-key *root-map* (kbd "L") "move-window right")
 
+(define-key *root-map* (kbd "'") "windowlist")
+
 (define-key *root-map* (kbd "C-h") '*help-map*)
 
 (define-key *root-map* (kbd "q") "delete")
 (define-key *root-map* (kbd "r") "remove")
 (define-key *root-map* (kbd "R") "iresize")
+
+(define-key *root-map* (kbd "z") "delete")
 
 (setf *resize-increment* 25)
 (define-key *top-map* (kbd "M-l") "resize-direction Right")
@@ -256,11 +260,21 @@
 (define-key *aadi/emacs-map* (kbd "s") "exec emacsclient -c -a '' ~/Documents/some-code")
 (define-key *aadi/emacs-map* (kbd "m") "exec emacsclient -c -a '' ~/.config/stumpwm/config")
 
+(ql:quickload "cl-ppcre")
+(defcommand aadi/yt-search () ()
+  (run-shell-command
+   (concat "brave --incognito --new-window youtube.com/results?search_query="
+           (cl-ppcre:regex-replace-all " "
+                                       (completing-read (current-screen)
+                                                        "Youtube search: "
+                                                        (list "Asmongold" "Gothamchess" "Distrotube"))
+                                       "+"))))
+
 (defvar *aadi/browser-map* (make-sparse-keymap)
   "Keymap for finding files (and doing other things) in emacs.")
 (define-key *root-map* (kbd "w") '*aadi/browser-map*)
 (define-key *aadi/browser-map* (kbd "w") "exec brave")
-(define-key *aadi/browser-map* (kbd "y") "exec yt")
+(define-key *aadi/browser-map* (kbd "y") "aadi/yt-search")
 (define-key *aadi/browser-map* (kbd "i") "exec brave --incognito --new-window")
 (define-key *aadi/browser-map* (kbd "p") "exec brave --incognito --new-window")
 
@@ -295,7 +309,7 @@
   (1 t nil :class "XTerm"))
 
 (define-frame-preference "Ardour"
-  (0 t   t   :instance "ardour_editor" :type :normal)
+    (0 t   t   :instance "ardour_editor" :type :normal)
   (0 t   t   :title "Ardour - Session Control")
   (0 nil nil :class "XTerm")
   (1 t   nil :type :normal)
@@ -305,5 +319,5 @@
   (3 t   t   :instance "qjackctl" :role "qjackctlMainForm"))
 
 (define-frame-preference "Shareland"
-  (0 t   nil :class "XTerm")
+    (0 t   nil :class "XTerm")
   (1 nil t   :class "aMule"))
