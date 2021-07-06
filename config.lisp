@@ -6,8 +6,16 @@
 
 (load "~/quicklisp/setup.lisp")
 
-(setf *message-window-gravity* :bottom-right
-      *input-window-gravity* :bottom-right
+;;; Changing the prefix key to the super key
+;; Clear the super key
+(run-shell-command "xmodmap -e 'clear mod4'" t)
+;; Bind the super key to F20
+(run-shell-command "xmodmap -e \'keycode 133 = F20\'" t)
+;; Set the prefix key to F20
+(set-prefix-key (kbd "F20"))
+
+(setf *message-window-gravity* :center
+      *input-window-gravity* :center
       *window-border-style* :thin
       *message-window-padding* 10
       *maxsize-border-width* 2
@@ -104,13 +112,6 @@
 (stumpwm:gnewbg "8")
 (stumpwm:gnewbg "9")
 
-;; I change the prefix key to something else besides a keychord.
-;; The following three lines are a dirty hack to make SUPER the prefix key.
-;; This was originally (set-prefix-key (kbd "C-t"))
-(run-shell-command "xmodmap -e 'clear mod4'" t)
-(run-shell-command "xmodmap -e \'keycode 133 = F20\'" t)
-(set-prefix-key (kbd "F20"))
-
 (defcommand colon1 (&optional (initial "")) (:rest)
   (let ((cmd (read-one-line (current-screen) ": " :initial-input initial)))
     (when cmd
@@ -181,11 +182,6 @@
                                                         (list "Asmongold" "Gothamchess" "Distrotube"))
                                        "+"))))
 
-;; prompt the user for an interactive command. The first arg is an
-;; optional initial contents.
-
-;; workspace keybinds
-
 (defvar *move-to-keybinds* (list "!" "@"  "#" "$" "%" "^" "&" "*" "("))
 (dotimes (y 9)
   (let ((workspace (write-to-string (+ y 1))))
@@ -199,11 +195,6 @@
 (define-key *root-map* (kbd "X") "increase-gaps")
 (define-key *root-map* (kbd "Z") "decrease-gaps")
 
-;; (define-key *root-map* (kbd "h") "move-focus left")
-;; (define-key *root-map* (kbd "j") "move-focus down")
-;; (define-key *root-map* (kbd "k") "move-focus up")
-;; (define-key *root-map* (kbd "l") "move-focus left")
-
 (define-key *root-map* (kbd "h") "move-focus left")
 (define-key *root-map* (kbd "j") "move-focus down")
 (define-key *root-map* (kbd "k") "move-focus up")
@@ -215,7 +206,11 @@
 
 (define-key *root-map* (kbd "'") "windowlist")
 
-(define-key *root-map* (kbd "C-h") '*help-map*)
+(setf *resize-increment* 25)
+(define-key *top-map* (kbd "M-l") "resize-direction Right")
+(define-key *top-map* (kbd "M-h") "resize-direction Left")
+(define-key *top-map* (kbd "M-k") "resize-direction Up")
+(define-key *top-map* (kbd "M-j") "resize-direction Down")
 
 (define-key *root-map* (kbd "q") "delete")
 (define-key *root-map* (kbd "r") "remove")
@@ -223,22 +218,36 @@
 
 (define-key *root-map* (kbd "z") "delete")
 
-(setf *resize-increment* 25)
-(define-key *top-map* (kbd "M-l") "resize-direction Right")
-(define-key *top-map* (kbd "M-h") "resize-direction Left")
-(define-key *top-map* (kbd "M-k") "resize-direction Up")
-(define-key *top-map* (kbd "M-j") "resize-direction Down")
+(define-key *root-map* (kbd "C-h") '*help-map*)
 
 (define-key *root-map* (kbd "C-m") "mode-line")
 
-(define-key *root-map* (kbd "RET") "exec st") 
-
-;; Launch Dmenu
-;; (define-key *root-map* (kbd "d") "exec dmenu_run")
-;; (define-key *top-map* (kbd "M-space") "exec dmenu_run -c -i -g 4 -l 7")
-
 (define-key *root-map* (kbd "space") "exec")
 (define-key *root-map* (kbd "M-space") "exec")
+
+(define-key *root-map* (kbd "RET") "exec st")
+(defvar *aadi/scripts-map* (make-sparse-keymap)
+  "Keymap for finding files (and doing other things) in emacs.")
+(define-key *root-map* (kbd "a") '*aadi/scripts-map*)
+(define-key *aadi/scripts-map* (kbd "h") "exec st -e htop")
+(define-key *aadi/scripts-map* (kbd "f") "exec st -e ranger")
+(define-key *aadi/scripts-map* (kbd "n") "exec st -e nmtui")
+(define-key *aadi/scripts-map* (kbd "r") "exec ramusage")
+
+(define-key *aadi/scripts-map* (kbd "N") "exec st -e nmtui")
+
+(defvar *aadi/emacs-map* (make-sparse-keymap)
+  "Keymap for finding files (and doing other things) in emacs.")
+
+(defvar *aadi/editor* "e")
+
+(define-key *root-map* (kbd "e") '*aadi/emacs-map*)
+(define-key *aadi/emacs-map* (kbd "e") (concat "exec " *aadi/editor*))
+(define-key *aadi/emacs-map* (kbd "f") (concat "exec " *aadi/editor* " ~"))
+(define-key *aadi/emacs-map* (kbd "c") (concat "exec " *aadi/editor* " ~/.config/"))
+(define-key *aadi/emacs-map* (kbd "w") (concat "exec " *aadi/editor* " ~/Documents/emacs-wiki/main.org"))
+(define-key *aadi/emacs-map* (kbd "s") (concat "exec " *aadi/editor* " ~/Documents/some-code"))
+(define-key *aadi/emacs-map* (kbd "m") (concat "exec " *aadi/editor* " ~/.config/stumpwm/config.org"))
 
 (defvar *aadi/layouts-map* (make-sparse-keymap)
   "Layouts to set for windows")
@@ -246,19 +255,9 @@
 (define-key *aadi/layouts-map* (kbd "g") "restore-from-file ~/.config/stumpwm/layouts/grid")
 (define-key *aadi/layouts-map* (kbd "3") "restore-from-file ~/.config/stumpwm/layouts/3layout")
 (define-key *aadi/layouts-map* (kbd "4") "restore-from-file ~/.config/stumpwm/layouts/4layout")
+(define-key *aadi/layouts-map* (kbd "w") "restore-from-file ~/.config/stumpwm/layouts/web")
 (define-key *aadi/layouts-map* (kbd "t") "float-this")
 (define-key *aadi/layouts-map* (kbd "T") "unfloat-this")
-
-(defvar *aadi/emacs-map* (make-sparse-keymap)
-  "Keymap for finding files (and doing other things) in emacs.")
-
-(define-key *root-map* (kbd "e") '*aadi/emacs-map*)
-(define-key *aadi/emacs-map* (kbd "e") "exec emacsclient -c -a ''")
-(define-key *aadi/emacs-map* (kbd "f") "exec emacsclient -c -a '' ~")
-(define-key *aadi/emacs-map* (kbd "c") "exec emacsclient -c -a '' ~/.config/")
-(define-key *aadi/emacs-map* (kbd "w") "exec emacsclient -c -a '' ~/Documents/emacs-wiki/main.org")
-(define-key *aadi/emacs-map* (kbd "s") "exec emacsclient -c -a '' ~/Documents/some-code")
-(define-key *aadi/emacs-map* (kbd "m") "exec emacsclient -c -a '' ~/.config/stumpwm/config.org")
 
 (defvar *aadi/browser-map* (make-sparse-keymap)
   "Keymap for finding files (and doing other things) in emacs.")
@@ -267,13 +266,6 @@
 (define-key *aadi/browser-map* (kbd "y") "aadi/yt-search")
 (define-key *aadi/browser-map* (kbd "i") "exec brave --incognito --new-window")
 (define-key *aadi/browser-map* (kbd "p") "exec brave --incognito --new-window")
-
-(defvar *aadi/scripts-map* (make-sparse-keymap)
-  "Keymap for finding files (and doing other things) in emacs.")
-(define-key *root-map* (kbd "a") '*aadi/scripts-map*)
-(define-key *aadi/scripts-map* (kbd "h") "exec st -e htop")
-(define-key *aadi/scripts-map* (kbd "f") "exec st -e ranger")
-(define-key *aadi/scripts-map* (kbd "r") "exec ramusage")
 
 (define-key *top-map* (kbd "XF86AudioMute") "exec pamixer -t")
 (define-key *top-map* (kbd "XF86AudioRaiseVolume") "exec pamixer --allow-boost -i 5")
