@@ -36,8 +36,6 @@
                          :antialias t))
 
 (load-module "swm-gaps")
-(if (not swm-gaps:*gaps-on*)
-    (swm-gaps:toggle-gaps))
 (setf swm-gaps:*inner-gaps-size* 7
       swm-gaps:*outer-gaps-size* 12
       swm-gaps:*head-gaps-size* 0)
@@ -156,7 +154,7 @@
         (swm-gaps:toggle-gaps)
         (swm-gaps:toggle-gaps))))
 
-                                        ; display the key sequence in progress
+; display the key sequence in progress
 ;; (defun key-press-hook (key key-seq cmd)
 ;;   (declare (ignore key))
 ;;   (unless (eq *top-map* *resize-map*)
@@ -175,12 +173,18 @@
 (ql:quickload "cl-ppcre")
 (defcommand aadi/yt-search () ()
   (run-shell-command
-   (concat "brave --incognito --new-window youtube.com/results?search_query="
-           (cl-ppcre:regex-replace-all " "
-                                       (completing-read (current-screen)
-                                                        "Youtube search: "
-                                                        (list "Asmongold" "Gothamchess" "Distrotube"))
-                                       "+"))))
+   (let ((search (completing-read (current-screen) "Youtube search: " (list "Asmongold" "Gothamchess" "Distrotube"))))
+     (if (string/= search nil)
+         (concat "brave --incognito --new-window youtube.com/results?search_query="
+                 (cl-ppcre:regex-replace-all " " search "+"))))))
+
+(defcommand (withdraw-from-windowlist tile-group)
+    (&optional (fmt *window-format*)) (:rest)
+  (let ((pulled-window (select-window-from-menu
+                        (group-windows (current-group))
+                        fmt)))
+    (when pulled-window
+      (withdraw-window gpulled-window))))
 
 (defvar *move-to-keybinds* (list "!" "@"  "#" "$" "%" "^" "&" "*" "("))
 (dotimes (y 9)
@@ -218,6 +222,17 @@
 
 (define-key *root-map* (kbd "z") "delete")
 
+(defvar *aadi/windows-map* (make-sparse-keymap)
+  "Keymap for manipulating windows")
+
+(define-key *root-map* (kbd "b") '*aadi/windows-map*)
+(define-key *aadi/windows-map* (kbd "C-k") "kill-windows-current-group")
+(define-key *aadi/windows-map* (kbd "k") "withdraw-from-windowlist")
+(define-key *aadi/windows-map* (kbd "o") "kill-windows-other")
+(define-key *aadi/windows-map* (kbd "p") "pull-from-windowlist")
+(define-key *aadi/windows-map* (kbd "t") "toggle-always-on-top")
+(define-key *aadi/windows-map* (kbd "T") "toggle-always-show")
+
 (define-key *root-map* (kbd "C-h") '*help-map*)
 
 (define-key *root-map* (kbd "C-m") "mode-line")
@@ -233,6 +248,7 @@
 (define-key *aadi/scripts-map* (kbd "f") "exec st -e ranger")
 (define-key *aadi/scripts-map* (kbd "n") "exec st -e nmtui")
 (define-key *aadi/scripts-map* (kbd "r") "exec ramusage")
+(define-key *aadi/scripts-map* (kbd "y") "exec mpv-yt")
 
 (define-key *aadi/scripts-map* (kbd "N") "exec st -e nmtui")
 
