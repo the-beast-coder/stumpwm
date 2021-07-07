@@ -84,7 +84,7 @@
 
 (setf *group-format* " %t ")
 ;; (setf *window-format* "%m%50t ")
-(setf *window-format* "%m%n%s%20t ")
+(setf *window-format* "%m%n%s%18t ")
 (setf *mode-line-timeout* 1)
 
 (setf stumpwm:*screen-mode-line-format*
@@ -100,15 +100,10 @@
 (stumpwm:toggle-mode-line (stumpwm:current-screen)
                           (stumpwm:current-head))
 
-(stumpwm:grename "1")
-(stumpwm:gnewbg "2")
-(stumpwm:gnewbg "3")
-(stumpwm:gnewbg "4")
-(stumpwm:gnewbg "5")
-(stumpwm:gnewbg "6")
-(stumpwm:gnewbg "7")
-(stumpwm:gnewbg "8")
-(stumpwm:gnewbg "9")
+(defvar *aadi/workspaces* (list "WWW" "Emacs" "Term"))
+(stumpwm:grename (nth 0 *aadi/workspaces*))
+(dolist (workspace (cdr *aadi/workspaces*))
+  (stumpwm:gnewbg workspace))
 
 (defcommand colon1 (&optional (initial "")) (:rest)
   (let ((cmd (read-one-line (current-screen) ": " :initial-input initial)))
@@ -178,16 +173,16 @@
          (concat "brave --incognito --new-window youtube.com/results?search_query="
                  (cl-ppcre:regex-replace-all " " search "+"))))))
 
-(defcommand (withdraw-from-windowlist tile-group)
+(defcommand (kill-from-windowlist tile-group)
     (&optional (fmt *window-format*)) (:rest)
-  (let ((pulled-window (select-window-from-menu
+  (let ((window-to-kill (select-window-from-menu
                         (group-windows (current-group))
                         fmt)))
-    (when pulled-window
-      (withdraw-window gpulled-window))))
+    (when window-to-kill
+      (kill-window window-to-kill))))
 
 (defvar *move-to-keybinds* (list "!" "@"  "#" "$" "%" "^" "&" "*" "("))
-(dotimes (y 9)
+(dotimes (y (length *aadi/workspaces*))
   (let ((workspace (write-to-string (+ y 1))))
     (define-key *root-map* (kbd workspace) (concat "gselect " workspace))
     (define-key *root-map* (kbd (nth y *move-to-keybinds*)) (concat "gmove-and-follow " workspace))))
@@ -198,6 +193,9 @@
 (define-key *root-map* (kbd "g") "toggle-gaps")
 (define-key *root-map* (kbd "X") "increase-gaps")
 (define-key *root-map* (kbd "Z") "decrease-gaps")
+
+(define-key *root-map* (kbd "C-h") '*aadi/*help-map*)
+(define-key *root-map* (kbd "C-m") "mode-line")
 
 (define-key *root-map* (kbd "h") "move-focus left")
 (define-key *root-map* (kbd "j") "move-focus down")
@@ -226,19 +224,18 @@
   "Keymap for manipulating windows")
 
 (define-key *root-map* (kbd "b") '*aadi/windows-map*)
-(define-key *aadi/windows-map* (kbd "C-k") "kill-windows-current-group")
-(define-key *aadi/windows-map* (kbd "k") "withdraw-from-windowlist")
-(define-key *aadi/windows-map* (kbd "o") "kill-windows-other")
+(define-key *aadi/windows-map* (kbd "K") "kill-windows-current-group")
+(define-key *aadi/windows-map* (kbd "k") "kill-from-windowlist")
+(define-key *aadi/windows-map* (kbd "O") "kill-windows-other")
 (define-key *aadi/windows-map* (kbd "p") "pull-from-windowlist")
 (define-key *aadi/windows-map* (kbd "t") "toggle-always-on-top")
 (define-key *aadi/windows-map* (kbd "T") "toggle-always-show")
 
-(define-key *root-map* (kbd "C-h") '*help-map*)
-
-(define-key *root-map* (kbd "C-m") "mode-line")
+(define-key *root-map* (kbd "C-k") "withdraw-from-windowlist")
 
 (define-key *root-map* (kbd "space") "exec")
-(define-key *root-map* (kbd "M-space") "exec")
+(define-key *top-map* (kbd "M-space") "exec")
+(define-key *top-map* (kbd "M-;") "colon")
 
 (define-key *root-map* (kbd "RET") "exec st")
 (defvar *aadi/scripts-map* (make-sparse-keymap)
