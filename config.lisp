@@ -96,9 +96,11 @@
 (setf *mode-line-background-color* "#000809")
 (setf *mode-line-foreground-color* "DeepSkyBlue")
 
-;; turn on/off the mode line for the current head only.
-(stumpwm:toggle-mode-line (stumpwm:current-screen)
-                          (stumpwm:current-head))
+;; Turn on the modeline for all heads
+(dolist (head
+         (list (first (screen-heads (current-screen)))))
+  (enable-mode-line (current-screen) head
+                    t *screen-mode-line-format*))
 
 (defvar *aadi/workspaces* (list "WWW" "Emacs" "Term"))
 (stumpwm:grename (nth 0 *aadi/workspaces*))
@@ -142,7 +144,7 @@
   (swm-gaps:toggle-gaps))
 
 (defcommand decrease-gaps () ()
-  (if (> swm-gaps:*inner-gaps-size* 5)
+  (if ((and (> swm-gaps:*inner-gaps-size* 7) (> swm-gaps:*outer-gaps-size* 7)))
       (progn
         (setf swm-gaps:*outer-gaps-size* (- swm-gaps:*outer-gaps-size* 5)
               swm-gaps:*inner-gaps-size* (- swm-gaps:*inner-gaps-size* 5))
@@ -231,7 +233,7 @@
 (define-key *aadi/windows-map* (kbd "t") "toggle-always-on-top")
 (define-key *aadi/windows-map* (kbd "T") "toggle-always-show")
 
-(define-key *root-map* (kbd "C-k") "withdraw-from-windowlist")
+(define-key *root-map* (kbd "C-k") "kill-from-windowlist")
 
 (define-key *root-map* (kbd "space") "exec")
 (define-key *top-map* (kbd "M-space") "exec")
@@ -246,7 +248,6 @@
 (define-key *aadi/scripts-map* (kbd "n") "exec st -e nmtui")
 (define-key *aadi/scripts-map* (kbd "r") "exec ramusage")
 (define-key *aadi/scripts-map* (kbd "y") "exec mpv-yt")
-
 (define-key *aadi/scripts-map* (kbd "N") "exec st -e nmtui")
 
 (defvar *aadi/emacs-map* (make-sparse-keymap)
@@ -261,16 +262,27 @@
 (define-key *aadi/emacs-map* (kbd "w") (concat "exec " *aadi/editor* " ~/Documents/emacs-wiki/main.org"))
 (define-key *aadi/emacs-map* (kbd "s") (concat "exec " *aadi/editor* " ~/Documents/some-code"))
 (define-key *aadi/emacs-map* (kbd "m") (concat "exec " *aadi/editor* " ~/.config/stumpwm/config.org"))
+(define-key *aadi/emacs-map* (kbd "n") "open-notes")
 
-(defvar *aadi/layouts-map* (make-sparse-keymap)
+(defvar *aadi/layouts-map-multimonitor* (make-sparse-keymap)
   "Layouts to set for windows")
-(define-key *root-map* (kbd "[") '*aadi/layouts-map*)
-(define-key *aadi/layouts-map* (kbd "g") "restore-from-file ~/.config/stumpwm/layouts/grid")
-(define-key *aadi/layouts-map* (kbd "3") "restore-from-file ~/.config/stumpwm/layouts/3layout")
-(define-key *aadi/layouts-map* (kbd "4") "restore-from-file ~/.config/stumpwm/layouts/4layout")
-(define-key *aadi/layouts-map* (kbd "w") "restore-from-file ~/.config/stumpwm/layouts/web")
-(define-key *aadi/layouts-map* (kbd "t") "float-this")
-(define-key *aadi/layouts-map* (kbd "T") "unfloat-this")
+(define-key *root-map* (kbd "[") '*aadi/layouts-map-monitor*)
+(define-key *aadi/layouts-map-multimonitor* (kbd "g") "restore-from-file ~/.config/stumpwm/layouts/multimonitor/grid")
+(define-key *aadi/layouts-map-multimonitor* (kbd "3") "restore-from-file ~/.config/stumpwm/layouts/multimonitor/3layout")
+(define-key *aadi/layouts-map-multimonitor* (kbd "4") "restore-from-file ~/.config/stumpwm/layouts/multimonitor/4layout")
+(define-key *aadi/layouts-map-multimonitor* (kbd "w") "restore-from-file ~/.config/stumpwm/layouts/multimonitor/web")
+(define-key *aadi/layouts-map-multimonitor* (kbd "t") "float-this")
+(define-key *aadi/layouts-map-multimonitor* (kbd "T") "unfloat-this")
+
+(defvar *aadi/layouts-map-singlemonitor* (make-sparse-keymap)
+  "Layouts to set for windows")
+(define-key *root-map* (kbd "]") '*aadi/layouts-map-monitor*)
+(define-key *aadi/layouts-map-singlemonitor* (kbd "g") "restore-from-file ~/.config/stumpwm/layouts/singlemonitor/grid")
+(define-key *aadi/layouts-map-singlemonitor* (kbd "3") "restore-from-file ~/.config/stumpwm/layouts/singlemonitor/3layout")
+(define-key *aadi/layouts-map-singlemonitor* (kbd "4") "restore-from-file ~/.config/stumpwm/layouts/singlemonitor/4layout")
+(define-key *aadi/layouts-map-singlemonitor* (kbd "w") "restore-from-file ~/.config/stumpwm/layouts/singlemonitor/web")
+(define-key *aadi/layouts-map-singlemonitor* (kbd "t") "float-this")
+(define-key *aadi/layouts-map-singlemonitor* (kbd "T") "unfloat-this")
 
 (defvar *aadi/browser-map* (make-sparse-keymap)
   "Keymap for finding files (and doing other things) in emacs.")
@@ -286,33 +298,3 @@
 
 (define-key *root-map* (kbd "C-Right") "exec brightnessctl set 7%+")
 (define-key *root-map* (kbd "C-Left") "exec brightnessctl set 7%-")
-
-;;; Define window placement policy...
-;; Clear rules
-;;(clear-window-placement-rules)
-
-;; Last rule to match takes precedence!
-;; TIP: if the argument to :title or :role begins with an ellipsis, a substring
-;;
-;; TIP: if the :create flag is set then a missing group will be created and
-;; restored from *data-dir*/create file.
-;; TIP: if the :restore flag is set then group dump is restored even for an
-;; existing group using *data-dir*/restore file.
-(define-frame-preference "Default"
-    ;; frame raise lock (lock AND raise == jumpto)
-    (0 t nil :class "Konqueror" :role "...konqueror-mainwindow")
-  (1 t nil :class "XTerm"))
-
-(define-frame-preference "Ardour"
-    (0 t   t   :instance "ardour_editor" :type :normal)
-  (0 t   t   :title "Ardour - Session Control")
-  (0 nil nil :class "XTerm")
-  (1 t   nil :type :normal)
-  (1 t   t   :instance "ardour_mixer")
-  (2 t   t   :instance "jvmetro")
-  (1 t   t   :instance "qjackctl")
-  (3 t   t   :instance "qjackctl" :role "qjackctlMainForm"))
-
-(define-frame-preference "Shareland"
-    (0 t   nil :class "XTerm")
-  (1 nil t   :class "aMule"))
